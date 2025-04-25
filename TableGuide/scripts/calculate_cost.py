@@ -1,7 +1,6 @@
 import json
 import re
 import sys
-sys.path.append('/data/yangyuxin/LargeTableRAG')
 from processing_format import get_row_description, get_col_description, get_row_flattened
 from generate_solution_plan import get_solution_plan
 from utils.request_gpt import request_gpt_chat, request_gpt_embedding
@@ -54,7 +53,7 @@ def get_col_template(table, prompt):
 #     return col_template_prompt_token
 
 def process_single_table(col_prompt, plan_prompt, final_reasoning_prompt, noplan_reasoning_prompt):
-    """算solution plan cost"""
+    """solution plan cost"""
     item = json.loads(d)
     table = item["table_text"]
     question = item["statement"]
@@ -74,9 +73,6 @@ def old():
     # 加载输入数据
     with open("result/final_reasoning/wtq/gpt4o-mini/read_result_1113_test_gpt4omini.json", 'r') as f:
         data = json.load(f)
-
-    # with open("result/final_reasoning/wtq/gpt4o-mini/result_1113_test_dp_gpt4omini.jsonl", 'r') as f:
-    #     data = f.readlines()
 
     # 加载所需的 prompt 文件
     with open("prompt/final_reasoning.md", "r") as f:

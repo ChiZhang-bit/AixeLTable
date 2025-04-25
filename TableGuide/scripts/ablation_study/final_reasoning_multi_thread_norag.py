@@ -3,7 +3,6 @@ import re
 import os
 from tqdm import tqdm
 import sys
-sys.path.append('/data/yangyuxin/LargeTableRAG')
 from scripts.processing_format import get_row_description, get_col_description, get_row_flattened
 from scripts.generate_solution_plan import get_solution_plan
 from utils.request_gpt import request_gpt_chat, request_gpt_embedding
