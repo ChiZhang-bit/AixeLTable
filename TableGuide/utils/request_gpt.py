@@ -14,11 +14,9 @@ port_map = {
 
 
 client = OpenAI(
-    api_key="sk-l2CRvLrTveK441PT4bBc512053144630A5E653229e065203",
-    base_url="https://api.tata-api.com/v1"
+    api_key="",
+    base_url=""
 )
-client.base_url = "https://api.tata-api.com/v1"
-
 
 def count_tokens(text, model="gpt-4o-mini"):
     enc = tiktoken.encoding_for_model(model)
