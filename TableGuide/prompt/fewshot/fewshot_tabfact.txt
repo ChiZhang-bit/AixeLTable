@@ -1,0 +1,22 @@
+Example1：
+
+Statement:
+The company with a profit of 38870 million has a revenue of 244000 million.
+
+
+Sampled Table:
+```
+| Company   | Revenue ($M) | Profit ($M) |
+| Apple     | 365817       | 94680       |
+| Samsung   | 244000       | 38870       |
+| Walmart   | 559151       | 13400       |
+| Huawei    | 137000       | 9300        |
+| Lenovo    | 60000        | 1700        |
+```
+
+Output:
+
+[
+  {"NodeID": 1, "Sub-Level-Question": "Which company has a profit of 38870 million?", "Action": "Retrieval", "Top k": "1", "Next": [2]},
+  {"NodeID": 2, "Sub-Level-Question": "What is the revenue of that company?", "Action": "Reasoning", "Top k": "1", "Next": []}
+]
