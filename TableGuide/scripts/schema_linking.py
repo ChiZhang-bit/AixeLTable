@@ -1,6 +1,5 @@
 import sys
 import json
-sys.path.append('/data/yangyuxin/LargeTableRAG')
 from utils.request_gpt import request_gpt_chat
 
 

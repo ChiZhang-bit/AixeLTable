@@ -6,7 +6,6 @@ import threading
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-sys.path.append('/data/yangyuxin/LargeTableRAG')
 
 from processing_format import get_row_flattened, get_col_description
 from utils.processing import clean_table

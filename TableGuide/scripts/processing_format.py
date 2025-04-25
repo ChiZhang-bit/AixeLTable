@@ -2,7 +2,6 @@ import random
 import json
 import sys
 import re
-sys.path.append('/data/yangyuxin/LargeTableRAG')
 from utils.request_gpt import request_gpt_chat, request_gpt_embedding
 from utils.processing import sample_table_rows
 

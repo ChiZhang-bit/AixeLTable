@@ -5,7 +5,6 @@ from tqdm import tqdm
 import traceback
 import sys
 import hashlib
-sys.path.append('/data/yangyuxin/LargeTableRAG')
 from processing_format import get_row_description, get_col_description, get_row_flattened
 from generate_dag import get_dag
 from utils.request_gpt import request_gpt_chat, request_gpt_embedding

@@ -1,7 +1,6 @@
 import json
 import sys
 import re
-sys.path.append('/data/yangyuxin/LargeTableRAG')
 from utils.request_gpt import request_gpt_chat, request_gpt_embedding
 from scripts.processing_format import get_row_description, get_col_description
 from scripts.generate_solution_plan import get_solution_plan

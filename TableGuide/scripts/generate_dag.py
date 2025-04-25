@@ -3,7 +3,6 @@ import random
 import sys
 import re
 from tqdm import tqdm
-sys.path.append('/data/yangyuxin/LargeTableRAG')
 from utils.request_gpt import request_gpt_chat
 from utils.processing import list_to_markdown, sample_table_rows
 from concurrent.futures import ThreadPoolExecutor, as_completed
