@@ -46,12 +46,19 @@ if [ ! -f "$NOPLAN_REASONING_PROMPT_PATH" ]; then
   exit 1
 fi
 
+# Run save_embedding script
+python3 scripts/save_embedding.py \
+  --col_prompt_path "$COL_PROMPT_PATH" \
+  --input_path "$DATASET_PATH" \
+  --output_path "cache/table_embeddings.jsonl"
+
 # Run the Python script with the provided arguments
-python3 scripts/final_reasoning.py \
+python3 scripts/final_reasoning_multi_thread_save_embedding.py \
   --dataset_path "$DATASET_PATH" \
   --row_prompt_path "$ROW_PROMPT_PATH" \
   --col_prompt_path "$COL_PROMPT_PATH" \
   --plan_prompt_path "$PLAN_PROMPT_PATH" \
+  --embedding_path "cache/table_embeddings.jsonl" \
   --final_reasoning_prompt_path "$FINAL_REASONING_PROMPT_PATH" \
   --noplan_reasoning_prompt_path "$NOPLAN_REASONING_PROMPT_PATH" \
   --result_file_path "$RESULT_FILE_PATH" \
