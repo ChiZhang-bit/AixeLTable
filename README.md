@@ -1,18 +1,18 @@
-# TableGuide
+# AixeLTable
 
-**TableGuide: A Stepwise-Guided Retrieval and Reasoning Framework for Large Table QA**
+**AixeLTable: A Stepwise-Guided Retrieval and Reasoning Framework for Large Table QA**
 
-This repository contains the implementation of **TableGuide**, a novel framework specifically designed for question answering tasks over large-scale tables.
+This repository contains the implementation of **AixeLTable**, a novel framework specifically designed for question answering tasks over large-scale tables.
 
 ## Overview
 
-This repository provides the code implementation for **TableGuide**, a stepwise-guided retrieval and reasoning framework designed for large-scale Table-based Question Answering (QA). 
+This repository provides the code implementation for **AixeLTable**, a stepwise-guided retrieval and reasoning framework designed for large-scale Table-based Question Answering (QA). 
 
-TableGuide aims to improve table-based QA tasks by combining table retrieval and reasoning steps in a structured manner. The framework leverages state-of-the-art models and methods to efficiently process tabular data and answer complex questions that require deep reasoning across tables.
+AixeLTable aims to improve table-based QA tasks by combining table retrieval and reasoning steps in a structured manner. The framework leverages state-of-the-art models and methods to efficiently process tabular data and answer complex questions that require deep reasoning across tables.
 
 ## Project Structure
 
-This is the structure of the TableGuide project:
+This is the structure of the AixeLTable project:
 
 ```latex
 ├── dataset/                    # Datasets
@@ -27,7 +27,7 @@ This is the structure of the TableGuide project:
 │   ├── TabFact+/               # Results on TabFact+ dataset
 │   ├── WikiTQ-4k/              # Results on WikiTQ-4k dataset
 │   └── WikiTQ+/                # Results on WikiTQ+ dataset
-├── TableGuide/                 # Core implementation of TableGuide
+├── AixeLTable/                 # Core implementation of AixeLTable
 │   ├── prompt/                 # Prompt templates
 │   ├── scripts/                # Script files and constants
 │   └── utils/                  
@@ -98,7 +98,7 @@ bash run.sh
 
 ### Prompt
 
-The prompt directory contains templates for interacting with LLMs. The key prompts utilized by TableGuide include:
+The prompt directory contains templates for interacting with LLMs. The key prompts utilized by AixeLTable include:
 
 - **`final_reasoning.md`**: Performs the final reasoning step, synthesizing retrieved data to answer the question.
 - **`final_reasoning_DAG.md`**: Final reasoning using the DAG-structured solution plan.
@@ -111,7 +111,7 @@ The prompt directory contains templates for interacting with LLMs. The key promp
 - **`noplan_reasoning_tabfact.md`**: Template for reasoning without a solution plan, adapted for TabFact+.
 - **`prompt_schema_linking.md`**: Aligns the table schema with the query to enhance retrieval accuracy.
 
-Prompts in TableGuide are dynamically selected based on the dataset, question complexity, and specific task requirements, ensuring structured guidance for effective retrieval and reasoning across large-scale tables.
+Prompts in AixeLTable are dynamically selected based on the dataset, question complexity, and specific task requirements, ensuring structured guidance for effective retrieval and reasoning across large-scale tables.
 
 ## Setting Your OpenAI Key:
 
