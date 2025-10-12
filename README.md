@@ -1,6 +1,6 @@
-# AixeLTable
+# AixelAsk
 
-**AixeLTable: A Stepwise-Guided Retrieval and Reasoning Framework for Large Table QA**
+**AixelAsk: A Stepwise-Guided Retrieval and Reasoning Framework for Large Table QA**
 
 This repository contains the implementation of **AixeLTable**, a novel framework specifically designed for question answering tasks over large-scale tables.
 
