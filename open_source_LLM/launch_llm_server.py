@@ -33,16 +33,7 @@ port_map = {
 # define server app
 app = Flask(__name__)
 
-
-# load model, tokenizer
-
-# model_path= '/home/TableSense/hadong/ssd2/table_rag/hugging_face_models/Meta-Llama-3.1-8B-Instruct'
-# model_path= '/home/TableSense/hadong/ssd2/table_rag/hugging_face_models/Mistral-Nemo-Instruct-2407'
-# model_path= '/home/TableSense/hadong/ssd2/table_rag/hugging_face_models/Phi-3.5-mini-instruct'
-# model_path= '/home/TableSense/hadong/ssd1/c7y/hugging_face_models/Qwen2.5-7B-Instruct'
-# model_path= '/home/TableSense/hadong/ssd1/c7y/hugging_face_models/Qwen2.5-72B-Instruct'
-# model_path= '/home/TableSense/hadong/ssd1/c7y/hugging_face_models/Qwen2.5-32B-Instruct'
-model_path = '/data/yangyuxin/LargeTableRAG/Mistral-7B'
+model_path = ''
 
 
 port = port_map['mistral'] #pid: 3495351
