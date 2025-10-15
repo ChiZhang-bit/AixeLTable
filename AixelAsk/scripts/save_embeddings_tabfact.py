@@ -6,7 +6,6 @@ import threading
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-
 from processing_format import get_row_flattened, get_col_description
 from utils.processing import clean_table
 from utils.request_gpt import request_gpt_embedding
@@ -18,7 +17,7 @@ def get_embeddings(descriptions, request_fn):
 
 
 def load_existing_table_ids(output_path):
-    """读取已保存的 embedding 文件中的 table_id 集合"""
+    """Read existing table_ids from the saved embedding file and return as a set."""
     existing_ids = set()
     if not os.path.exists(output_path):
         return existing_ids
@@ -36,15 +35,15 @@ def load_existing_table_ids(output_path):
 
 
 def save_embeddings(index, line, col_prompt, seen_table_ids, lock):
-    """处理单个表格条目，提取并保存表的行列 embedding，如果是重复表则跳过"""
+    """Process a single table entry, compute and save row/column embeddings; skip if the table is duplicated."""
     try:
         item = json.loads(line)
         table = item["table_text"]
         statement = item["statement"]
-        table_id = item.get("table_id")  # ✅ 使用已有 table_id
+        table_id = item.get("table_id")  # ✅ Use existing table_id
 
         if not table_id:
-            return None  # 如果缺失 table_id，跳过
+            return None  # Skip if table_id is missing
 
         with lock:
             if table_id in seen_table_ids:

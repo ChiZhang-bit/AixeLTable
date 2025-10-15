@@ -13,88 +13,84 @@ from utils.processing import list_to_markdown, sample_table_rows
 
 input_tokens, output_tokens = 0, 0
 
+
 def count_tokens(text, model="gpt-3.5-turbo"):
     """
-    计算输入文本的 token 数量
-    :param text: 输入的文本
-    :param model: 所用模型（影响 token 化方式）
-    :return: token 数量
+    Count the number of tokens in the input text.
+    :param text: Input text
+    :param model: Model used for tokenization (affects tokenizer)
+    :return: Number of tokens
     """
-    # 获取模型对应的编码器
+    # Get the tokenizer for the specified model
     encoding = tiktoken.encoding_for_model(model)
     
-    # 使用编码器对文本进行编码并计算 token 数
+    # Encode the text and return the token count
     tokenized = encoding.encode(text)
     return len(tokenized)
 
+
 def get_col_template(table, prompt):
-    # 随机sample表格
+    """Randomly sample table rows and format a column prompt."""
     header, sampled_rows = sample_table_rows(table)
     markdown_header = "| " + " | ".join(header) + " |\n"
     markdown_rows = ""
     for row in sampled_rows:
         markdown_rows += "| " + " | ".join(row) + " |\n"
 
-    # 生成列模板的prompt
-    prompt = prompt.format(header = markdown_header, sampled_rows = markdown_rows)
-    # print(prompt)
+    # Generate the column prompt
+    prompt = prompt.format(header=markdown_header, sampled_rows=markdown_rows)
     return prompt
 
 
+# Example: for computing col prompt token cost
 # def process_single_table(d, col_prompt, plan_prompt, final_reasoning_prompt, noplan_reasoning_prompt):
-#     """算col prompt cost"""
+#     """Compute column prompt token cost."""
 #     item = json.loads(d)
 #     table = item["table_text"]
-
 #     cleaned_table = clean_table(table)
 #     col_template_prompt = get_col_template(cleaned_table, col_prompt)
 #     col_template_prompt_token = count_tokens(col_template_prompt)
-
 #     return col_template_prompt_token
 
+
 def process_single_table(col_prompt, plan_prompt, final_reasoning_prompt, noplan_reasoning_prompt):
-    """solution plan cost"""
+    """Compute solution plan token cost."""
     item = json.loads(d)
     table = item["table_text"]
     question = item["statement"]
 
     cleaned_table = clean_table(table)
-    # 生成 solution plan
+    # Generate solution plan
     header, sampled_rows = sample_table_rows(cleaned_table)
 
     markdown_table = list_to_markdown(header, sampled_rows)
-    input = plan_prompt.format(question=question, table=markdown_table)
-    token = count_tokens(input)
+    input_prompt = plan_prompt.format(question=question, table=markdown_table)
+    token = count_tokens(input_prompt)
 
     return token
 
 
 def old():
-    # 加载输入数据
+    """Estimate token usage for final reasoning stage."""
+    # Load input data
     with open("result/final_reasoning/wtq/gpt4o-mini/read_result_1113_test_gpt4omini.json", 'r') as f:
         data = json.load(f)
 
-    # 加载所需的 prompt 文件
+    # Load the reasoning prompt
     with open("prompt/final_reasoning.md", "r") as f:
         final_reasoning_prompt = f.read()
 
-
     count = 0
     input_tokens = 0
-    # for index, d in enumerate(data):
-
 
     for key, value in data.items():
         tmp = []
         answer = value["pred_answer"]
         input_tokens += count_tokens(answer)
-        
+
         if "final_sub_table" not in value.keys():
             continue
-    #     if "solution_plan" in value.keys():
-    #         count += 1
-    #         text = str(value["solution_plan"])
-    #         input_tokens += count_tokens(text)
+
         solution_plan = value["solution_plan"]
         Flag = False
         for s in solution_plan:
@@ -108,23 +104,15 @@ def old():
             count += 1
             input_tokens += count_tokens(prompt)
 
-
-        # 处理单个表格数据
-        # result = process_single_table(col_prompt, plan_prompt, final_reasoning_prompt, noplan_reasoning_prompt)
-
-        # input_tokens += result
-        # count += 1
-
-
     print(input_tokens)
     print(count)
-    print(input_tokens/len(data))
+    print(input_tokens / len(data))
     return None
 
+
 def dp_count():
-
-    # 加载输入数据
-
+    """Estimate token usage for plan-free reasoning prompts."""
+    # Load input data
     with open("dataset/wikitq/test/4096/4096.jsonl", 'r') as f:
         data = f.readlines()
 
@@ -148,15 +136,16 @@ def dp_count():
         for row in table:
             table_md += "| " + " | ".join(map(str, row)) + " |\n"
 
-        noplan_reasoning_prompt = noplan_reasoning_prompt.format(question = question, table=table_md)
+        formatted_prompt = noplan_reasoning_prompt.format(question=question, table=table_md)
 
-        input_tokens += count_tokens(noplan_reasoning_prompt)
+        input_tokens += count_tokens(formatted_prompt)
         count += 1
-        
+
     print(input_tokens)
     print(count)
-    print(input_tokens/count)
+    print(input_tokens / count)
 
-    return(None)
+    return None
+
 
 old()

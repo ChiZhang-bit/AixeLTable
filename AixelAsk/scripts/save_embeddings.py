@@ -6,27 +6,26 @@ import threading
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-
 from processing_format import get_row_flattened, get_col_description
 from utils.processing import clean_table
 from utils.request_gpt import request_gpt_embedding
 
 
 def get_embeddings(descriptions, request_fn):
-    """获取每个描述的embedding"""
+    """Get the embedding for each description."""
     # return [request_fn(desc) for desc in descriptions]
     embeddings = [request_fn(desc) for desc in tqdm(descriptions, desc="Generating Embeddings")]
     return embeddings
 
 
 def get_table_id_from_text(table):
-    """根据 table_text 内容生成唯一 ID（使用 hash）"""
+    """Generate a unique ID from table_text content (via hash)."""
     table_str = json.dumps(table, sort_keys=True)
     return hashlib.sha1(table_str.encode('utf-8')).hexdigest()
 
 
 def load_existing_table_ids(output_path):
-    """读取已保存的 embedding 文件中的 table_id 集合"""
+    """Read the set of table_id values from an existing embeddings file."""
     existing_ids = set()
     if not os.path.exists(output_path):
         return existing_ids
@@ -44,13 +43,13 @@ def load_existing_table_ids(output_path):
 
 
 def save_embeddings(index, line, col_prompt, seen_table_ids, lock):
-    """处理单个表格条目，提取并保存表的行列 embedding，如果是重复表则跳过"""
+    """Process a single table entry, extract and save row/column embeddings; skip if table is duplicated."""
     try:
         item = json.loads(line)
         table = item["table_text"]
         statement = item["statement"]
 
-        # 生成唯一 table_id
+        # Generate a unique table_id
         table_id = get_table_id_from_text(table)
 
         with lock:
@@ -58,7 +57,7 @@ def save_embeddings(index, line, col_prompt, seen_table_ids, lock):
                 return None
             seen_table_ids.add(table_id)
 
-        # 清洗表格
+        # Clean the table
         cleaned_table = clean_table(table)
 
         # row_descriptions = 'test'
@@ -67,11 +66,11 @@ def save_embeddings(index, line, col_prompt, seen_table_ids, lock):
         # row_embeddings = 'testttt'
         # col_embeddings = 'testttt'
 
-        # 获取描述
+        # Get descriptions
         row_descriptions = get_row_flattened(cleaned_table)
         col_descriptions = get_col_description(cleaned_table, col_prompt)
 
-        # 获取 embedding
+        # Get embeddings
         row_embeddings = get_embeddings(row_descriptions, request_gpt_embedding)
         col_embeddings = get_embeddings(col_descriptions, request_gpt_embedding)
 

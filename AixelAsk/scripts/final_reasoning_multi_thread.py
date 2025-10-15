@@ -13,7 +13,7 @@ from generate_answer import generate_final_answer, generate_noplan_answer
 
 
 def process_single_table(index, d, row_prompt, col_prompt, plan_prompt, final_reasoning_prompt, noplan_reasoning_prompt):
-    """处理单个表格并返回结果数据"""
+    """Process a single table and return the result record."""
     item = json.loads(d)
     table = item["table_text"]
     question = item["statement"]
@@ -22,24 +22,24 @@ def process_single_table(index, d, row_prompt, col_prompt, plan_prompt, final_re
     cleaned_table = clean_table(table)
     indexed_cleaned_table = index_table(cleaned_table)
 
-    # # 清理表头
+    # # Example: clean the header (kept for reference)
     # header = table[0]
     # cleaned_header = clean_header(header)
     # cleaned_table = [cleaned_header] + table[1:]
     # cleaned_indexing_table = add_row_index_column(cleaned_table)
 
     try:
-        # 生成行、列的自然语言描述
+        # Generate natural-language descriptions for rows and columns
         # row_descriptions = get_row_description(cleaned_table, row_prompt)
         row_descriptions = get_row_flattened(cleaned_table)
         col_descriptions = get_col_description(cleaned_table, col_prompt)
 
-        # 生成 solution plan
+        # Generate the solution plan
         solution_plan = get_solution_plan(cleaned_table, question, plan_prompt)
 
-        # 如果 plan 无效或仅有一个 stage 且为 Reasoning
+        # If the plan is invalid or has only a single reasoning stage
         if solution_plan is None or len(solution_plan) == 1:
-            # 执行无需 plan 的推理生成
+            # Perform reasoning without a plan
             final_answer = generate_noplan_answer(question, indexed_cleaned_table, noplan_reasoning_prompt)
             is_correct = final_answer.lower() == answer.lower()
             record_data = {
@@ -49,19 +49,19 @@ def process_single_table(index, d, row_prompt, col_prompt, plan_prompt, final_re
                 "pred_answer": final_answer,
                 "is_correct": is_correct,
                 "type": "Single stage reasoning or invalid plan",
-                "solution_plan":solution_plan,
+                "solution_plan": solution_plan,
                 "table_text": indexed_cleaned_table,
                 "prompt": noplan_reasoning_prompt,
             }
         else:
-            # 如果有多个 stage 且经过验证有效，则进行Retrieval
+            # If there are multiple valid stages, perform retrieval
             final_subtable, final_row_indices, final_col_indices = retrieve_final_subtable_add(
                 solution_plan, indexed_cleaned_table, row_descriptions, col_descriptions, request_gpt_embedding, question
             )
             final_answer = generate_final_answer(question, solution_plan, final_subtable, final_reasoning_prompt)
             final_answer = final_answer.strip()
 
-            # 检查答案是否正确
+            # Check correctness
             is_correct = final_answer.lower() == answer.lower()
             record_data = {
                 "index": index,
@@ -81,7 +81,7 @@ def process_single_table(index, d, row_prompt, col_prompt, plan_prompt, final_re
             }
 
     except Exception as e:
-        print(f"Error encountered {index}: {e}. Skipping this iteration.")
+        print(f"Error encountered at index {index}: {e}. Skipping this iteration.")
         final_answer = generate_noplan_answer(question, indexed_cleaned_table, noplan_reasoning_prompt)
         is_correct = final_answer.lower() == answer.lower()
         record_data = {
@@ -118,8 +118,7 @@ def main():
     with open("prompt/noplan_reasoning.md", "r") as f:
         noplan_reasoning_prompt = f.read()
 
-    # 读取已有结果文件，提取已处理的索引
-
+    # Read existing result file and collect already processed indices
     result_file_path = "result/final_reasoning/wtq_plus/gpt3.5/result_1117_wtq+_valid_test_gpt3_5.jsonl"
     existing_indices = set()
 
@@ -129,25 +128,30 @@ def main():
                 result_data = json.loads(line)
                 existing_indices.add(result_data["index"])
     else:
-        print(f"{result_file_path} 文件不存在，将跳过已有结果的检查。")
+        print(f"{result_file_path} does not exist; skipping processed-index check.")
 
     true_count = 0
     pass_count = 0
 
-    # 线程池 并发处理每个表格数据
+    # Use a thread pool to process each table concurrently
     with ThreadPoolExecutor(max_workers=5) as executor:
         futures = [
-            executor.submit(process_single_table, index, d, row_prompt, col_prompt, plan_prompt, final_reasoning_prompt, noplan_reasoning_prompt)
+            executor.submit(
+                process_single_table,
+                index, d,
+                row_prompt, col_prompt, plan_prompt,
+                final_reasoning_prompt, noplan_reasoning_prompt
+            )
             for index, d in enumerate(data) if index not in existing_indices
         ]
 
-        with open(result_file_path, 'a', encoding='utf-8') as f: 
+        with open(result_file_path, 'a', encoding='utf-8') as f:
             for future in tqdm(as_completed(futures), total=len(futures), desc="Processing data"):
                 result = future.result()
-                
+
                 f.write(json.dumps(result, ensure_ascii=False) + "\n")
                 f.flush()
-                
+
                 if "is_correct" in result and result["is_correct"]:
                     true_count += 1
                 if "error" in result:

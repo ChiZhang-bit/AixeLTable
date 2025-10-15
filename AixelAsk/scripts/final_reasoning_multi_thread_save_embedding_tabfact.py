@@ -15,7 +15,7 @@ from generate_answer import generate_final_answer_DAG, generate_noplan_answer
 
 
 def load_question_type_map(label_file):
-    """读取标注文件并返回 question 到 type 的映射字典"""
+    """Read the label file and return a mapping from question to type."""
     question_type_map = {}
     with open(label_file, 'r', encoding='utf-8') as f:
         for line in f:
@@ -25,7 +25,7 @@ def load_question_type_map(label_file):
 
 
 def load_table_embedding_map(filepath):
-    """将 embedding 文件加载为 table_id -> embedding 信息的字典"""
+    """Load the embedding file into a dictionary: table_id -> embedding info."""
     table_map = {}
     with open(filepath, 'r', encoding='utf-8') as f:
         for line in f:
@@ -40,34 +40,33 @@ def get_embedding_for_table(table_id, table_embedding_map):
 
 
 def process_single_table(index, d, row_prompt, col_prompt, plan_prompt, final_reasoning_prompt, noplan_reasoning_prompt, question_type_map, table_embedding_map):
-    """处理单个表格并返回结果数据"""
+    """Process a single table and return the result record."""
     item = json.loads(d)
     table = item["table_text"]
     table_id = item["table_id"]
     question = item["statement"]
     answer = item["answer"]
-    # question_type = question_type_map.get(question, "hybrid")  # 默认用 hybrid fallback
+    # question_type = question_type_map.get(question, "hybrid")  # default to hybrid fallback
 
     cleaned_table = clean_table(table)
     indexed_cleaned_table = index_table(cleaned_table)
 
     table_embeddings = get_embedding_for_table(table_id, table_embedding_map)
 
-
     dag = None
     try:
-        # 生成行、列的自然语言描述
+        # Generate natural-language descriptions for rows/columns (kept for reference; currently unused)
         # row_descriptions = get_row_description(cleaned_table, row_prompt)
         # row_descriptions = get_row_flattened(cleaned_table)
         # col_descriptions = get_col_description(cleaned_table, col_prompt)
 
-        # 生成 DAG
+        # Generate DAG
         dag = get_dag(cleaned_table, question, "tabfact", plan_prompt)
 
-        # 如果 DAG 无效或仅有一个Node
+        # If the DAG is invalid or has only one node
         if dag is None or len(dag) == 1:
         # if 1:
-            # 执行无需 plan 的推理生成
+            # Perform plan-free reasoning
             final_answer = generate_noplan_answer(question, indexed_cleaned_table, noplan_reasoning_prompt)
             is_correct = final_answer.lower() == answer.lower()
             record_data = {
@@ -82,14 +81,14 @@ def process_single_table(index, d, row_prompt, col_prompt, plan_prompt, final_re
                 "prompt": noplan_reasoning_prompt,
             }
         else:
-            # 如果有多个 stage 且经过验证有效，则进行Retrieval
+            # If there are multiple stages and the DAG is valid, perform retrieval
             final_subtable, final_row_indices, final_col_indices = retrieve_final_subtable_DAG_save_embedding(
                 dag, indexed_cleaned_table, table_embeddings, question
             )
             final_answer = generate_final_answer_DAG(question, dag, final_subtable, final_reasoning_prompt)
             final_answer = final_answer.strip()
 
-            # 检查答案是否正确
+            # Check correctness
             is_correct = final_answer.lower() == answer.lower()
             record_data = {
                 "index": index,
@@ -151,8 +150,7 @@ def main():
     question_type_map = load_question_type_map("dataset/wikitq/valid/4096/4096_daglabeled.jsonl")
     table_embedding_map = load_table_embedding_map("cache/table_embeddings_tabfact.jsonl")
 
-    # 读取已有结果文件，提取已处理的索引
-
+    # Read the existing result file and collect indices already processed
     result_file_path = "new_result/tabfact/mistral/result_tabfact_mistral.jsonl"
     existing_indices = set()
 
@@ -162,25 +160,31 @@ def main():
                 result_data = json.loads(line)
                 existing_indices.add(result_data["index"])
     else:
-        print(f"{result_file_path} 文件不存在，将跳过已有结果的检查。")
+        print(f"{result_file_path} does not exist; skipping processed-index check.")
 
     true_count = 0
     pass_count = 0
 
-    # 线程池 并发处理每个表格数据
+    # Use a thread pool to process each table concurrently
     with ThreadPoolExecutor(max_workers=8) as executor:
         futures = [
-            executor.submit(process_single_table, index, d, row_prompt, col_prompt, plan_prompt, final_reasoning_prompt, noplan_reasoning_prompt, question_type_map, table_embedding_map)
+            executor.submit(
+                process_single_table,
+                index, d,
+                row_prompt, col_prompt, plan_prompt,
+                final_reasoning_prompt, noplan_reasoning_prompt,
+                question_type_map, table_embedding_map
+            )
             for index, d in enumerate(data) if index not in existing_indices
         ]
 
-        with open(result_file_path, 'a', encoding='utf-8') as f: 
+        with open(result_file_path, 'a', encoding='utf-8') as f:
             for future in tqdm(as_completed(futures), total=len(futures), desc="Processing data"):
                 result = future.result()
-                
+
                 f.write(json.dumps(result, ensure_ascii=False) + "\n")
                 f.flush()
-                
+
                 if "is_correct" in result and result["is_correct"]:
                     true_count += 1
                 if "error" in result:

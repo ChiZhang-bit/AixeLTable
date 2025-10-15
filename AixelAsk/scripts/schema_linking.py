@@ -4,12 +4,16 @@ from utils.request_gpt import request_gpt_chat
 
 
 def rewrite_question(question, headers):
+    """
+    Rewrite a question by incorporating schema information (column headers).
+    Uses a schema-linking prompt to make the question more explicit.
+    """
     with open("prompt/prompt_schema_linking.md", "r") as f:
         prompt = f.read()
     prompt = prompt.format(question=question, headers=str(headers))
-    rewrited_question = request_gpt_chat(prompt=prompt)
+    rewritten_question = request_gpt_chat(prompt=prompt)
 
-    return rewrited_question
+    return rewritten_question
 
 
 if __name__ == "__main__":
@@ -22,5 +26,5 @@ if __name__ == "__main__":
         question = item["statement"]
         headers = table[0]
 
-        rewrited_question = rewrite_question(question, headers)
-        print(rewrited_question)
+        rewritten_question = rewrite_question(question, headers)
+        print(rewritten_question)
